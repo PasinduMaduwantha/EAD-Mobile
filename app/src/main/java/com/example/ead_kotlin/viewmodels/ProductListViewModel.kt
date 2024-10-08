@@ -22,9 +22,10 @@ class ProductListViewModel : ViewModel() {
             try {
                 val response = apiService.getAllProducts()
                 if (response.isSuccessful && response.isSuccessful == true) {
-                    _products.value = response.body()?.data ?: emptyList()
+                    println("get all products: "+response.body())
+                    _products.value = response.body()?.Data ?: emptyList()
                 } else {
-                    _errorMessage.value = response.body()?.message
+                    _errorMessage.value = response.body()?.Message
                         ?: "Failed to fetch products: ${response.errorBody()?.string()}"
                 }
             } catch (e: Exception) {

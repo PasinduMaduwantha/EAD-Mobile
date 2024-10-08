@@ -21,11 +21,11 @@ class HomeViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = apiService.getAllProducts()
-                if (response.isSuccessful && response.body()?.isSuccessful == true) {
+                if (response.isSuccessful && response.body()?.IsSuccessful == true) {
                     // Get all products and take the first 4 as featured products
-                    _featuredProducts.value = response.body()?.data?.take(4) ?: emptyList()
+                    _featuredProducts.value = response.body()?.Data?.take(4) ?: emptyList()
                 } else {
-                    _errorMessage.value = response.body()?.message
+                    _errorMessage.value = response.body()?.Message
                         ?: "Failed to fetch featured products: ${response.errorBody()?.string()}"
                 }
             } catch (e: Exception) {

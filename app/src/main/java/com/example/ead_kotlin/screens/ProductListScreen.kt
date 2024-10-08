@@ -45,7 +45,7 @@ fun ProductListScreen(navController: NavController) {
                 ) {
                     items(products) { product ->
                         ProductListItem(product) {
-                            navController.navigate("product/${product.id}")
+                            navController.navigate("product/${product.Id}")
                         }
                     }
                 }

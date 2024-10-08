@@ -23,10 +23,9 @@ class ProductDetailViewModel : ViewModel() {
                 val response = apiService.getProductById(id)
 
                 if (response.isSuccessful && response.isSuccessful == true) {
-                    _product.value = response.body()?.data
+                    _product.value = response.body()?.Data
                 } else {
-                    _errorMessage.value = response.body()?.message
-                        ?: "Failed to fetch product: ${response.errorBody()?.string()}"
+                    _errorMessage.value = response.body()?.Message?: "Failed to fetch product: ${response.errorBody()?.string()}"
                 }
             } catch (e: Exception) {
                 _errorMessage.value = "Error: ${e.message}"

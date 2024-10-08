@@ -6,6 +6,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
+import java.util.concurrent.TimeUnit
 
 interface ApiService {
     @POST("api/auth/login")
@@ -23,10 +24,13 @@ interface ApiService {
 
 
     @POST("api/orders/create-order")
-    suspend fun createOrder(@Body createOrderDto: CreateOrderDto): Response<OrderDto>
+    suspend fun createOrder(@Header("Authorization") authToken: String, @Body createOrderDto: CreateOrderDto): Response<ApiResponse<OrderDto>>
 
     @GET("api/orders/get-customer-orders")
-    suspend fun getCustomerOrders(): Response<List<OrderDto>>
+    suspend fun getCustomerOrders(@Header("Authorization") authToken: String): Response<ApiResponse<List<GetOrderDto>>>
+
+    @PUT("api/orders/update-order-status/{orderId}")
+    suspend fun cancelOrder(@Header("Authorization") authToken: String, @Path("orderId") id: String?, @Body orderDto: OrderDto) : Response<ApiResponse<OrderDto>>
 
     @GET("api/users/profile")
     suspend fun getUserProfile(): Response<UserDto>
@@ -43,8 +47,15 @@ interface ApiService {
         fun create(): ApiService {
             val logger = HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
 
+//            val client = OkHttpClient.Builder()
+//                .addInterceptor(logger)
+//                .build()
+
             val client = OkHttpClient.Builder()
                 .addInterceptor(logger)
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
                 .build()
 
             return Retrofit.Builder()
@@ -57,8 +68,18 @@ interface ApiService {
     }
 }
 
+data class LoginData(
+    val Token: String,
+    val User: UserDto
+)
+
 data class LoginDto(val email: String, val password: String)
-data class LoginResponse(val token: String, val user: UserDto)
+data class LoginResponse(
+    val IsSuccessful: Boolean,
+    val TimeStamp: String,
+    val Message: String,
+    val Data: LoginData
+)
 data class UserDto(
     val id: String? = null,
     val firstName: String,
@@ -69,6 +90,15 @@ data class UserDto(
     val role: String? = null,
     val status: String? = null
 )
+//data class UserDto(
+//    val id: String? = null,
+//    val FirstName: String,
+//    val LastName: String,
+//    val Email: String,
+//    val Age: Int,
+//    val Role: String? = null,
+//    val Status: String? = null
+//)
 data class UserUpdateDto(val firstName: String, val lastName: String, val email: String, val age: Int)
 //data class ProductDto(
 //    val id: String,
@@ -77,14 +107,14 @@ data class UserUpdateDto(val firstName: String, val lastName: String, val email:
 //    val price: Double,
 //    val vendorId: String
 //)
-data class CreateOrderDto(val items: List<OrderItemDto>)
+data class CreateOrderDto(val orderItems: List<OrderItemDto>)
 data class OrderItemDto(val productId: String, val quantity: Int)
 data class OrderDto(
-    val id: String,
-    val customerId: String,
-    val items: List<OrderItemDto>,
-    val totalAmount: Double,
-    val status: String
+    val Id: String,
+    val CustomerId: String,
+    val OrderItems: List<GetOrderItemDto>,
+    val TotalAmount: Double,
+    val OrderStatus: String
 )
 data class VendorRatingCreateDto(val vendorId: String, val rating: Int, val comment: String)
 data class VendorRatingDto(
@@ -95,31 +125,102 @@ data class VendorRatingDto(
     val comment: String
 )
 data class ProductDto(
-    val id: String,
-    val vendorId: String,
-    val name: String,
-    val description: String,
-    val imageUrl: String,
-    val price: Double,
-    val qty: Int,
-    val categoryId: String,
-    val isActive: Boolean,
-    val createdAt: String,
-    val updatedAt: String,
-    val category: Category
+    val Id: String,
+    val VendorId: String,
+    val Name: String,
+    val Description: String,
+    val ImageUrl: String,
+    val Price: Double,
+    val Qty: Int,
+    val CategoryId: String,
+    val IsActive: Boolean,
+    val CreatedAt: String,
+    val UpdatedAt: String,
+    val Category: Category
 )
 
 data class Category(
-    val id: String,
-    val name: String,
-    val description: String,
-    val isActive: Boolean,
-    val createdAt: String,
-    val updatedAt: String
+    val Id: String,
+    val Name: String,
+    val Description: String,
+    val IsActive: Boolean,
+    val CreatedAt: String,
+    val UpdatedAt: String
 )
 data class ApiResponse<T>(
-    val isSuccessful: Boolean,
-    val timeStamp: String,
-    val message: String,
-    val data: T
+    val IsSuccessful: Boolean,
+    val TimeStamp: String,
+    val Message: String,
+    val Data: T
+)
+
+data class GetOrderDto(
+    val Id: String,
+    val CustomerId: String,
+    val OrderStatus: String,
+    val TotalAmount: Double,
+    val CreatedAt: String,
+    val UpdatedAt: String,
+    val OrderItems: List<GetOrderItemDto>,
+    val Customer: CustomerDto,
+    val Status: String
+)
+
+data class GetOrderItemDto(
+    val Id: String,
+    val OrderId: String,
+    val ProductId: String,
+    val Quantity: Int,
+    val Price: Double,
+    val VendorId: String,
+    val Status: String,
+    val Product: OrderProductDto,
+    val Vendor: VendorDto,
+)
+
+data class CustomerDto(
+    val id: String?,
+    val FirstName: String,
+    val LastName: String,
+    val Email: String,
+    val Age: Int,
+    val Password: String?,
+    val Role: String,
+    val Status: String?
+)
+
+data class VendorDto(
+    val id: String?,
+    val FirstName: String,
+    val LastName: String,
+    val Email: String,
+    val Age: Int,
+    val Password: String?,
+    val Role: String,
+    val Status: String?
+)
+
+data class OrderProductDto(
+    val Id: String,
+    val VendorId: String?,
+    val Name: String,
+    val Description: String,
+    val ImageUrl: String,
+    val Price: Double,
+    val Qty: Int,
+    val CategoryId: String?,
+    val IsActive: Boolean,
+    val CreatedAt: String,
+    val UpdatedAt: String,
+    val Category: CategoryDto?,
+    val Vendor: VendorDto?
+)
+
+data class CategoryDto(
+    val Id: String,
+    val Name: String,
+    val Description: String,
+    val IsActive: Boolean,
+    val CreatedAt: String,
+    val UpdatedAt: String
 )

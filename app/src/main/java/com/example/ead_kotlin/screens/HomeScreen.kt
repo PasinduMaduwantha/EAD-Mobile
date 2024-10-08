@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.ead_kotlin.viewmodels.HomeViewModel
 import com.example.ead_kotlin.ui.components.ProductListItem
+import com.example.ead_kotlin.viewmodels.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,7 +54,7 @@ fun HomeScreen(navController: NavController) {
             }
             items(featuredProducts) { product ->
                 ProductListItem(product) {
-                    navController.navigate("product/${product.id}")
+                    navController.navigate("product/${product.Id}")
                 }
             }
             item {
@@ -62,8 +63,19 @@ fun HomeScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
-                ) {
+                )
+                {
                     Text("View All Products")
+                }
+
+                Button(
+                    onClick = { navController.navigate("orders") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                )
+                {
+                    Text("View All Orders")
                 }
             }
         }

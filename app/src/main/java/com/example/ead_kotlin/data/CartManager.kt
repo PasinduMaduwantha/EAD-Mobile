@@ -10,7 +10,7 @@ class CartManager {
 
     fun addToCart(product: ProductDto, quantity: Int = 1) {
         val currentItems = _cartItems.value.toMutableList()
-        val existingItem = currentItems.find { it.product.id == product.id }
+        val existingItem = currentItems.find { it.product.Id == product.Id }
         if (existingItem != null) {
             existingItem.quantity += quantity
         } else {
@@ -20,12 +20,12 @@ class CartManager {
     }
 
     fun removeFromCart(productId: String) {
-        _cartItems.value = _cartItems.value.filter { it.product.id != productId }
+        _cartItems.value = _cartItems.value.filter { it.product.Id != productId }
     }
 
     fun updateQuantity(productId: String, quantity: Int) {
         val currentItems = _cartItems.value.toMutableList()
-        val item = currentItems.find { it.product.id == productId }
+        val item = currentItems.find { it.product.Id == productId }
         item?.let {
             it.quantity = quantity
             if (it.quantity <= 0) {
@@ -40,7 +40,7 @@ class CartManager {
     }
 
     fun getCartTotal(): Double {
-        return _cartItems.value.sumOf { it.product.price * it.quantity }
+        return _cartItems.value.sumOf { it.product.Price * it.quantity }
     }
 }
 
