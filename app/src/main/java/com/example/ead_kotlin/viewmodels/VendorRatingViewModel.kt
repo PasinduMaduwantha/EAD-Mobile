@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ead_kotlin.api.ApiService
 import com.example.ead_kotlin.api.VendorRatingCreateDto
+import com.example.ead_kotlin.viewmodels.UserSession.token
+
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -19,11 +21,14 @@ class VendorRatingViewModel : ViewModel() {
             _ratingStatus.value = RatingStatus.Loading
             try {
                 val ratingDto = VendorRatingCreateDto(vendorId, rating, comment)
-                val response = apiService.createVendorRating(ratingDto)
-                if (response.isSuccessful) {
-                    _ratingStatus.value = RatingStatus.Success
-                } else {
-                    _ratingStatus.value = RatingStatus.Error("Failed to submit rating: ${response.errorBody()?.string()}")
+
+                val response = apiService.createVendorRating("Bearer $token",ratingDto)
+                if (response != null) {
+                    if (response.isSuccessful) {
+                        _ratingStatus.value = RatingStatus.Success
+                    } else {
+                        _ratingStatus.value = RatingStatus.Error("Failed to submit rating: ${response.errorBody()?.string()}")
+                    }
                 }
             } catch (e: Exception) {
                 _ratingStatus.value = RatingStatus.Error("Error: ${e.message}")

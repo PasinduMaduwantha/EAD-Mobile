@@ -29,11 +29,15 @@ fun ProfileScreen(navController: NavController) {
 
     val userProfile by viewModel.userProfile.collectAsState()
     val updateStatus by viewModel.updateStatus.collectAsState()
+    val deactivateStatus by viewModel.deactivate.collectAsState()
 
+
+    var id by remember { mutableStateOf("") }
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var age by remember { mutableStateOf("") }
+    var status by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         viewModel.getUserProfile()
@@ -41,10 +45,12 @@ fun ProfileScreen(navController: NavController) {
 
     LaunchedEffect(userProfile) {
         userProfile?.let {
-            firstName = it.firstName
-            lastName = it.lastName
-            email=it.email
-            age = it.age.toString()
+            id = it.id.toString()
+            firstName = it.FirstName
+            lastName = it.LastName
+            email=it.Email
+            age = it.Age.toString()
+            status = it.Status.toString()
         }
     }
 
@@ -94,14 +100,33 @@ fun ProfileScreen(navController: NavController) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
             Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Status: $status",
+                style = MaterialTheme.typography.bodyLarge,)
+            Spacer(modifier = Modifier.height(16.dp))
+
             Button(
                 onClick = {
-                    viewModel.updateProfile(firstName, lastName, email,age.toIntOrNull() ?: 0)
+                    viewModel.updateProfile(firstName, lastName, email,age.toIntOrNull() ?: 0, status)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Update Profile")
             }
+            Spacer(modifier = Modifier.height(16.dp))
+
+
+
+            Button(
+                onClick = {
+                    viewModel.updateProfileStatus(id, "Deactivate Profile")
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Deactivate Profile")
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedButton(
                 onClick = {
@@ -118,6 +143,14 @@ fun ProfileScreen(navController: NavController) {
 
             // Show update status
             updateStatus?.let { status ->
+                Text(
+                    text = status,
+                    color = if (status.startsWith("Error")) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
+            deactivateStatus?.let { status ->
                 Text(
                     text = status,
                     color = if (status.startsWith("Error")) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,

@@ -33,13 +33,15 @@ interface ApiService {
     suspend fun cancelOrder(@Header("Authorization") authToken: String, @Path("orderId") id: String?, @Body orderDto: OrderDto) : Response<ApiResponse<OrderDto>>
 
     @GET("api/users/profile")
-    suspend fun getUserProfile(): Response<UserDto>
+    suspend fun getUserProfile(@Header("Authorization") authToken: String): Response<ApiResponse<UserProfileDto>>
 
     @PUT("api/users/profile")
-    suspend fun updateUserProfile(@Body userUpdateDto: UserUpdateDto): Response<UserDto>
+    suspend fun updateUserProfile(@Header("Authorization") authToken: String, @Body userUpdateDto: UserUpdateDto): Response<ApiResponse<UserProfileDto>>
+    @PUT("/api/users/update-status/{userId}")
+    suspend fun updateUserProfileStatus(@Header("Authorization") authToken: String, @Path("userId") id: String?, @Body userStatusUpdateDto: UserStatusUpdateDto): Response<ApiResponse<UserProfileDto>>
 
     @POST("api/vendor-ratings/create-vendor-rating")
-    suspend fun createVendorRating(@Body vendorRatingCreateDto: VendorRatingCreateDto): Response<VendorRatingDto>
+    suspend fun createVendorRating(@Header("Authorization") authToken: String, @Body vendorRatingCreateDto: VendorRatingCreateDto): Response<ApiResponse<VendorRatingDto>>
 
     companion object {
         private const val BASE_URL = "http://10.0.2.2:5076/" // This is the local machine's localhost for Android emulator
@@ -54,7 +56,7 @@ interface ApiService {
             val client = OkHttpClient.Builder()
                 .addInterceptor(logger)
                 .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(40, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .build()
 
@@ -67,6 +69,8 @@ interface ApiService {
         }
     }
 }
+
+data class UserStatusUpdateDto (val status : String )
 
 data class LoginData(
     val Token: String,
@@ -88,18 +92,18 @@ data class UserDto(
     val password: String? = null,
     val age: Int,
     val role: String? = null,
-    val status: String? = null
+    val Status: String? = null
 )
-//data class UserDto(
-//    val id: String? = null,
-//    val FirstName: String,
-//    val LastName: String,
-//    val Email: String,
-//    val Age: Int,
-//    val Role: String? = null,
-//    val Status: String? = null
-//)
-data class UserUpdateDto(val firstName: String, val lastName: String, val email: String, val age: Int)
+data class UserProfileDto(
+    val id: String? = null,
+    val FirstName: String,
+    val LastName: String,
+    val Email: String,
+    val Age: Int,
+    val Role: String? = null,
+    val Status: String? = null
+)
+data class UserUpdateDto(val firstName: String, val lastName: String, val email: String, val age: Int, val status: String)
 //data class ProductDto(
 //    val id: String,
 //    val name: String,
@@ -136,7 +140,8 @@ data class ProductDto(
     val IsActive: Boolean,
     val CreatedAt: String,
     val UpdatedAt: String,
-    val Category: Category
+    val Category: Category,
+    val Vendor: VendorDto
 )
 
 data class Category(

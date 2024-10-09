@@ -19,7 +19,7 @@ class RegisterViewModel : ViewModel() {
         viewModelScope.launch {
             _registerState.value = RegisterState.Loading
             try {
-                val response = apiService.register(UserDto(firstName = firstName, lastName = lastName, email = email, password = password, age = age, role = role, status = status))
+                val response = apiService.register(UserDto(firstName = firstName, lastName = lastName, email = email, password = password, age = age, role = role, Status = status))
                 if (response.isSuccessful) {
                     val userDto = response.body()
                     if (userDto != null) {

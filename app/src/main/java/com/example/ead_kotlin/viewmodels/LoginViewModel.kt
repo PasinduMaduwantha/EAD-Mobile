@@ -81,10 +81,15 @@ class LoginViewModel : ViewModel() {
                         val token = loginResponse.Data.Token
                         val user = loginResponse.Data.User
 
-                        // Store the token in UserSession
-                        UserSession.token = token
+                        println("user status: "+ user.Status)
 
-                        _loginState.value = LoginState.Success(loginResponse)
+                        if(user.Status == "active"){
+                            // Store the token in UserSession
+                            UserSession.token = token
+                            _loginState.value = LoginState.Success(loginResponse)
+                        }else{
+                            _loginState.value = LoginState.Error("User is not Activated yet.")
+                        }
                     } else {
                         _loginState.value = LoginState.Error("Empty response body")
                     }

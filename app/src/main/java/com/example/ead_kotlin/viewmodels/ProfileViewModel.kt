@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.ead_kotlin.api.ApiService
 import com.example.ead_kotlin.api.UserDto
+import com.example.ead_kotlin.api.UserProfileDto
+import com.example.ead_kotlin.api.UserStatusUpdateDto
 import com.example.ead_kotlin.api.UserUpdateDto
 import com.example.ead_kotlin.data.UserPreferences
 import com.example.ead_kotlin.data.CartManager
@@ -19,18 +21,21 @@ class ProfileViewModel(
 ) : ViewModel() {
     private val apiService = ApiService.create()
 
-    private val _userProfile = MutableStateFlow<UserDto?>(null)
-    val userProfile: StateFlow<UserDto?> = _userProfile
+    private val _userProfile = MutableStateFlow<UserProfileDto?>(null)
+    val userProfile: StateFlow<UserProfileDto?> = _userProfile
 
     private val _updateStatus = MutableStateFlow<String?>(null)
     val updateStatus: StateFlow<String?> = _updateStatus
 
+    private val _deactivate = MutableStateFlow<String?>(null)
+    val deactivate: StateFlow<String?> = _deactivate
+
     fun getUserProfile() {
         viewModelScope.launch {
             try {
-                val response = apiService.getUserProfile()
+                val response = apiService.getUserProfile("Bearer ${UserSession.token}")
                 if (response.isSuccessful) {
-                    _userProfile.value = response.body()
+                    _userProfile.value = response.body()?.Data
                 } else {
                     _updateStatus.value = "Error: Unable to fetch profile"
                 }
@@ -40,19 +45,34 @@ class ProfileViewModel(
         }
     }
 
-    fun updateProfile(firstName: String, lastName: String, email: String, age: Int) {
+    fun updateProfile(firstName: String, lastName: String, email: String, age: Int, status: String) {
         viewModelScope.launch {
             try {
-                val userUpdateDto = UserUpdateDto(firstName, lastName, email, age)
-                val response = apiService.updateUserProfile(userUpdateDto)
+                val userUpdateDto = UserUpdateDto(firstName, lastName, email, age, status)
+                val response = apiService.updateUserProfile("Bearer ${UserSession.token}", userUpdateDto)
                 if (response.isSuccessful) {
-                    _userProfile.value = response.body()
+                    _userProfile.value = response.body()?.Data
                     _updateStatus.value = "Profile updated successfully"
                 } else {
                     _updateStatus.value = "Error: Unable to update profile"
                 }
             } catch (e: Exception) {
                 _updateStatus.value = "Error: ${e.message}"
+            }
+        }
+    }fun updateProfileStatus(id: String, status: String) {
+        viewModelScope.launch {
+            try {
+                val userStatusUpdateDto = UserStatusUpdateDto(status)
+                val response = apiService.updateUserProfileStatus("Bearer ${UserSession.token}", id,userStatusUpdateDto)
+                if (response.isSuccessful) {
+                    _userProfile.value = response.body()?.Data
+                    _deactivate.value = "Successfully sent Deactivate Profile Request"
+                } else {
+                    _deactivate.value = "Error: Unable to update profile"
+                }
+            } catch (e: Exception) {
+                _deactivate.value = "Error: ${e.message}"
             }
         }
     }
