@@ -29,6 +29,9 @@ interface ApiService {
     @GET("api/orders/get-customer-orders")
     suspend fun getCustomerOrders(@Header("Authorization") authToken: String): Response<ApiResponse<List<GetOrderDto>>>
 
+    @GET("api/products/get-products-by-category")
+    suspend fun getProductsByCategory(): Response<GroupedProductsResponse>
+
     @PUT("api/orders/update-order-status/{orderId}")
     suspend fun cancelOrder(@Header("Authorization") authToken: String, @Path("orderId") id: String?, @Body orderDto: OrderDto) : Response<ApiResponse<OrderDto>>
 
@@ -37,6 +40,7 @@ interface ApiService {
 
     @PUT("api/users/profile")
     suspend fun updateUserProfile(@Header("Authorization") authToken: String, @Body userUpdateDto: UserUpdateDto): Response<ApiResponse<UserProfileDto>>
+
     @PUT("/api/users/update-status/{userId}")
     suspend fun updateUserProfileStatus(@Header("Authorization") authToken: String, @Path("userId") id: String?, @Body userStatusUpdateDto: UserStatusUpdateDto): Response<ApiResponse<UserProfileDto>>
 
@@ -76,6 +80,18 @@ data class LoginData(
     val Token: String,
     val User: UserDto
 )
+
+data class GroupedProductsDto(
+    val categories: Map<String, List<ProductDto>>
+)
+
+data class GroupedProductsResponse(
+    val IsSuccessful: Boolean,
+    val TimeStamp: String,
+    val Message: String,
+    val Data: GroupedProductsDto
+)
+
 
 data class LoginDto(val email: String, val password: String)
 data class LoginResponse(

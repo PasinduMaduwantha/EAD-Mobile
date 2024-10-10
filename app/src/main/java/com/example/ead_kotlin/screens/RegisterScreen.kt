@@ -5,11 +5,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.ead_kotlin.api.EmailService
 import com.example.ead_kotlin.viewmodels.RegisterViewModel
 import com.example.ead_kotlin.viewmodels.RegisterState
+import kotlinx.coroutines.launch
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,6 +29,8 @@ fun RegisterScreen(navController: NavController) {
     var role by remember { mutableStateOf("user") }
     var status by remember { mutableStateOf("active") }
 
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -81,6 +87,23 @@ fun RegisterScreen(navController: NavController) {
             is RegisterState.Loading -> CircularProgressIndicator()
             is RegisterState.Success -> {
                 LaunchedEffect(state) {
+                    coroutineScope.launch {
+                        try {
+                            EmailService.sendEmailNotification(
+                                context = context,
+                                recipient = "sadeepalakshan0804@gmail.com",
+                                subject = "New User Registered",
+                                body = "A new User with email: $email has been registered. Please check the user registration to activate user." +
+                                        "User details: " +
+                                        "First Name: $firstName" +
+                                        "Last Name: $lastName" +
+                                        "Age: $age"
+                            )
+                        } catch (e: Exception) {
+                            println(e.message ?: "Notification error")
+                        }
+                    }
+
                     navController.navigate("login") {
                         popUpTo("register") { inclusive = true }
                     }

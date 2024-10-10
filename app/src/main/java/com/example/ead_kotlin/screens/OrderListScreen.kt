@@ -1,5 +1,6 @@
 package com.example.ead_kotlin.screens
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,9 +12,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.ead_kotlin.api.EmailService
 import com.example.ead_kotlin.api.GetOrderDto
 import com.example.ead_kotlin.api.GetOrderItemDto
 import com.example.ead_kotlin.viewmodels.OrderListViewModel
@@ -59,43 +63,65 @@ fun OrderListScreen(navController: NavController) {
 @Composable
 fun OrderItem(order: GetOrderDto) {
     val viewModel: OrderListViewModel = viewModel()
+    val orderCancel by viewModel.orderCancel.collectAsState()
+    val context = LocalContext.current // Get the current context
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Order ID: ${order.Id}",
-                style = MaterialTheme.typography.titleMedium
-            )
-            Text(
-                text = "Total Amount: $${order.TotalAmount}",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Text(
-                text = "Status: ${order.OrderStatus}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            if (order.OrderStatus != "Canceled") {
-                Button(
-                    onClick = { viewModel.cancelOrder(token,order.Id, order) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                ) {
-                    Text(text = "Cancel Order")
+        if (order.OrderStatus != "Canceled"){
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Order ID: ${order.Id}",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = "Total Amount: $${order.TotalAmount}",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    text = "Status: ${order.OrderStatus}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                if (order.OrderStatus != "Canceled") {
+                    Button(
+                        onClick = { viewModel.cancelOrder(token,order.Id, order)
+                            EmailService.sendEmailNotification(
+                                context = context,
+                                recipient = "sadeepalakshan0804@gmail.com",
+                                subject = "Order Cancellation Notification",
+                                body = "An order with order id: ${order.Id} has been canceled. Please check the order details." +
+                                        "Order details: " +
+                                        "Customer Id: ${order.CustomerId}" +
+                                        "Customer Name: ${order.Customer.FirstName} ${order.Customer.LastName}" +
+                                        "Total Price: ${order.TotalAmount}"
+                            ) },
+
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp)
+                    ) {
+                        Text(text = "Cancel Order")
+                    }
                 }
-            }
+                orderCancel?.let { status ->
+                    Text(
+                        text = status,
+                        color = if (status.startsWith("Error")) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Items:",
+                    style = MaterialTheme.typography.titleSmall
+                )
+                order.OrderItems.forEach { item ->
+                    OrderItemRow(item)
+                }
 
-            Text(
-                text = "Items:",
-                style = MaterialTheme.typography.titleSmall
-            )
-            order.OrderItems.forEach { item ->
-                OrderItemRow(item)
             }
         }
     }
@@ -104,21 +130,19 @@ fun OrderItem(order: GetOrderDto) {
 @Composable
 fun OrderItemRow(item: GetOrderItemDto) {
 
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(vertical = 2.dp)
     ) {
         Text(
             text = "Name: ${item.Product.Name}:",
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f)
         )
         Text(
             text = "Quantity ${item.Quantity}",
             style = MaterialTheme.typography.bodyMedium
         )
-        Spacer(modifier = Modifier.height(16.dp))
         val bitmap = loadImageFromUrl(item.Product.ImageUrl)
         bitmap?.let {
             Image(
@@ -131,7 +155,7 @@ fun OrderItemRow(item: GetOrderItemDto) {
         } ?: run {
             // Show placeholder if image not loaded
             CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.CenterVertically)
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
     }

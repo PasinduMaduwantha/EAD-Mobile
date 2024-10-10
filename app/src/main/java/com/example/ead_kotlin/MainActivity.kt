@@ -44,6 +44,7 @@ fun MainContent() {
         composable("register") { RegisterScreen(navController) }
         composable("home") { HomeScreen( navController) }
         composable("products") { ProductListScreen(navController) }
+        composable("category") { CategoryListScreen(cartViewModel,navController) }
         composable("product/{productId}") { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId")
             productId?.let { ProductDetailScreen(cartViewModel,navController, it) }

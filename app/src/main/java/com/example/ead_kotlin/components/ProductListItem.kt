@@ -75,6 +75,7 @@ fun ProductListItem(product: ProductDto, onItemClick: () -> Unit) {
             ) {
                 Text(product.Name, style = MaterialTheme.typography.titleMedium)
                 Text("$${String.format("%.2f", product.Price)}", style = MaterialTheme.typography.bodyMedium)
+                Text(text = "Qty: ${product.Qty}", style = MaterialTheme.typography.titleMedium)
             }
         }
     }

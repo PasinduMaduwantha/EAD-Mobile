@@ -45,6 +45,7 @@ class OrderListViewModel : ViewModel() {
                 val response = apiService.cancelOrder("Bearer $token", orderId, orderDto)
                 if(response.isSuccessful){
                     _orderCancel.value = response.body()?.Data?.OrderStatus
+                    _orderCancel.value = "Successfully sent Order Cancel Request"
                 }else{
                     _errorMessage.value = "Failed to Cancel the order: ${response.errorBody()?.string()}"
                 }

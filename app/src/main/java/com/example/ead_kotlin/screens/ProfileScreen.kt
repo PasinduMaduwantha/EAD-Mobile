@@ -120,7 +120,7 @@ fun ProfileScreen(navController: NavController) {
 
             Button(
                 onClick = {
-                    viewModel.updateProfileStatus(id, "Deactivate Profile")
+                    viewModel.updateProfileStatus(id, "Deactivate")
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
